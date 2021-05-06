@@ -94,8 +94,8 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-volatile uint8_t uart_rx_buffer[2 * APP_RX_DATA_SIZE];
-extern volatile uint32_t uart_len_target, uart_len_current;
+extern volatile uint8_t uart_rx_buffer[2 * APP_RX_DATA_SIZE];
+extern volatile int rx_wp, rx_rp, rx_len;
 volatile uint8_t usb_state = 0xFF;      
 /* USER CODE END PRIVATE_VARIABLES */
 
@@ -263,17 +263,22 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
   int len = (int)*Len;
-  int len_curr = uart_len_current;
-  int len_targ = uart_len_target;
   
-  if (len_curr + len > len_targ) 
+  for (int i = 0; i < len; i++)
   {
-    len = len_targ - len_curr;
-  } 
-  memcpy((void*)&uart_rx_buffer[len_curr], (void*)Buf, len);
-  len_curr += len;
-  uart_len_current = len_curr;
-  
+    if (rx_len >= sizeof(uart_rx_buffer)) 
+    {  
+      break;
+    }
+    uart_rx_buffer[rx_wp] = Buf[i];
+    rx_wp++;
+    if (rx_wp == sizeof(uart_rx_buffer)) 
+    {
+      rx_wp = 0;
+    }
+    rx_len++;
+  }
+    
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);

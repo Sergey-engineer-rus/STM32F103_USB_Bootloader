@@ -62,9 +62,10 @@ typedef enum {
   X_ERROR_NUMBER  = 0x02u, /**< Packet number mismatch error. */
   X_ERROR_UART    = 0x04u, /**< UART communication error. */
   X_ERROR_FLASH   = 0x08u, /**< Flash related error. */
+  X_ERROR_TIMEOUT = 0x09u, /**< File upload start timeout. */
   X_ERROR         = 0xFFu  /**< Generic error. */
 } xmodem_status;
 
-void xmodem_receive(void);
+xmodem_status xmodem_receive(void);
 
 #endif /* XMODEM_H_ */

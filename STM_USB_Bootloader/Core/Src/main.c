@@ -26,6 +26,7 @@
 #include "ferenc_nemeth/uart.h"
 #include "ferenc_nemeth/flash.h"
 #include "ferenc_nemeth/xmodem.h"
+#include "usbd_cdc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,6 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define TERMINAL_CONNECT_TIMEOUT 100  // sec.
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,12 +55,35 @@ IWDG_HandleTypeDef hiwdg;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_IWDG_Init(void);
+
 /* USER CODE BEGIN PFP */
-extern volatile uint8_t usb_state;
+extern USBD_HandleTypeDef hUsbDeviceFS;
+extern PCD_HandleTypeDef hpcd_USB_FS;
+extern volatile uint8_t usb_state; 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void USB_off(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  
+  //HAL_PCD_MspDeInit(&hpcd_USB_FS);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET);
+  GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_Delay(1000);
+}
+
+static void USB_on(void)
+{
+   HAL_PCD_MspInit(&hpcd_USB_FS);
+   HAL_Delay(1000);
+}
+
 
 /* USER CODE END 0 */
 
@@ -69,7 +94,7 @@ extern volatile uint8_t usb_state;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  int boot_jumper = (HAL_GPIO_ReadPin(BOOT1_GPIO_Port, BOOT1_Pin) == GPIO_PIN_SET);  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -85,7 +110,20 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  // if it is not power reset or brown out reset
+  if ((RCC->CSR & RCC_CSR_LPWRRSTF_Msk) == 0 && (RCC->CSR & RCC_CSR_PORRSTF_Msk) == 0)
+  {
+    MX_GPIO_Init();  
+    for (int i = 0; i < 50; i++)
+    {
+      HAL_Delay(10);
+      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    }
+    //HAL_Delay(500);
+    USB_off(); // For restart if device reset
+  }
+  __HAL_RCC_CLEAR_RESET_FLAGS ();
+  
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -94,22 +132,49 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   
-  for (int i = 0; i < 20000; i++) {
-      HAL_Delay(500);
-      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-      HAL_IWDG_Refresh(&hiwdg);
-  }
-  uart_transmit_str((uint8_t*)"\n\r================================\n\r");
-  uart_transmit_str((uint8_t*)"UART Bootloader\n\r");
-  uart_transmit_str((uint8_t*)"https://github.com/ferenc-nemeth\n\r");
-  uart_transmit_str((uint8_t*)"================================\n\r\n\r");
-
-  /* If the button is pressed, then jump to the user application,
-   * otherwise stay in the bootloader. */
-  if(!HAL_GPIO_ReadPin(BOOT1_GPIO_Port, BOOT1_Pin))
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  for (int i = 0; i < 1000 && USBD_STATE_CONFIGURED != hUsbDeviceFS.dev_state; i++) 
   {
-    uart_transmit_str((uint8_t*)"Jumping to user application...\n\r");
+      HAL_Delay(1);
+  }
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+  
+  if (USBD_STATE_CONFIGURED != hUsbDeviceFS.dev_state) // USB not connected
+  {
     flash_jump_to_app();
+  }
+
+  // waiting and reset USB CDC config from PC OS.
+  for (int i = 0; i < 1000 && 0xFF == usb_state && USBD_STATE_CONFIGURED == hUsbDeviceFS.dev_state; i++) 
+  {
+      HAL_Delay(1);
+  }
+  HAL_Delay(100);
+  usb_state = 0xFF; 
+    
+  for (int i = 0; i < 10 * TERMINAL_CONNECT_TIMEOUT || boot_jumper; i++)
+  {
+    HAL_IWDG_Refresh(&hiwdg);
+    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    HAL_Delay(100);  
+    
+    if (USBD_STATE_CONFIGURED == hUsbDeviceFS.dev_state && CDC_GET_LINE_CODING == usb_state) 
+    {          
+      uart_transmit_str((uint8_t*)"\n\r================================\n\r");
+      uart_transmit_str((uint8_t*)"UART Bootloader\n\r");
+      uart_transmit_str((uint8_t*)"https://github.com/ferenc-nemeth\n\r");
+      uart_transmit_str((uint8_t*)"================================\n\r\n\r");
+      usb_state = 0xFF;
+      break;
+    }
+    else 
+    {
+      usb_state = 0xFF;
+    }
+    if (i + 1 == 10 * TERMINAL_CONNECT_TIMEOUT && !boot_jumper) // Terminal "ExtraPuTTY" not connected
+    {
+       flash_jump_to_app(); 
+    }
   }
   
   /* USER CODE END 2 */
@@ -124,12 +189,21 @@ int main(void)
     /* Turn on the green LED to indicate, that we are in bootloader mode.*/
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
     /* Ask for new data and start the Xmodem protocol. */
-    uart_transmit_str((uint8_t*)"Please send a new binary file with Xmodem protocol to update the firmware.\n\r");
-    xmodem_receive();
-    /* We only exit the xmodem protocol, if there are any errors.
-     * In that case, notify the user and start over. */
-    uart_transmit_str((uint8_t*)"\n\rFailed... Please try again.\n\r");
-      
+    uart_transmit_str((uint8_t*)"Please send a new binary file with Xmodem protocol to update the firmware.\n\r"
+                                "(You have 10 seconds to do this...)\n\r> ");
+    
+    if (X_ERROR_TIMEOUT == xmodem_receive()) 
+    {
+        uart_transmit_str((uint8_t*)"\n\rFile upload start timeout! Please try again.\n\r");
+    }
+    else
+    {
+      /* We only exit the xmodem protocol, if there are any errors.
+       * In that case, notify the user and start over. */
+      uart_transmit_str((uint8_t*)"\n\rFailed... Please try again.\n\r");
+    }
+    HAL_Delay(1000);
+    HAL_NVIC_SystemReset();
   }
   /* USER CODE END 3 */
 }

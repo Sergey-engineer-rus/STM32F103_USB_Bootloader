@@ -9,6 +9,10 @@
 
 #include "xmodem.h"
 
+#define FILE_START_TIMEOUT 100  // sec.
+
+extern IWDG_HandleTypeDef hiwdg;
+     
 /* Global variables. */
 static uint8_t xmodem_packet_number = 1u;         /**< Packet number counter. */
 static uint32_t xmodem_actual_flash_address = 0u; /**< Address where we have to write. */
@@ -25,15 +29,17 @@ static xmodem_status xmodem_error_handler(uint8_t *error_number, uint8_t max_err
  * @param   void
  * @return  void
  */
-void xmodem_receive(void)
+xmodem_status xmodem_receive(void)
 {
   volatile xmodem_status status = X_OK;
   uint8_t error_number = 0u;
-
+  uint32_t timer;
+  
   x_first_packet_received = false;
   xmodem_packet_number = 1u;
   xmodem_actual_flash_address = FLASH_APP_START_ADDRESS;
-
+  
+  timer = HAL_GetTick();
   /* Loop until there isn't any error (or until we jump to the user application). */
   while (X_OK == status)
   {
@@ -45,7 +51,14 @@ void xmodem_receive(void)
     /* Spam the host (until we receive something) with ACSII "C", to notify it, we want to use CRC-16. */
     if ((UART_OK != comm_status) && (false == x_first_packet_received))
     {
-      (void)uart_transmit_ch(X_C);
+      if (HAL_GetTick() - timer > 1000 * FILE_START_TIMEOUT)  
+      {
+          return X_ERROR_TIMEOUT;
+      }
+      if (UART_OK == uart_transmit_ch(X_C)) 
+      {
+          HAL_IWDG_Refresh(&hiwdg);
+      }
     }
     /* Uart timeout or any other errors. */
     else if ((UART_OK != comm_status) && (true == x_first_packet_received))
@@ -68,7 +81,11 @@ void xmodem_receive(void)
         packet_status = xmodem_handle_packet(header);
         if (X_OK == packet_status)
         {
-          (void)uart_transmit_ch(X_ACK);
+          if (UART_OK == uart_transmit_ch(X_ACK)) 
+          {
+            error_number = 0;  
+            HAL_IWDG_Refresh(&hiwdg);
+          }
         }
         /* If the error was flash related, then immediately set the error counter to max (graceful abort). */
         else if (X_ERROR_FLASH == packet_status)
@@ -86,8 +103,12 @@ void xmodem_receive(void)
       case X_EOT:
         /* ACK, feedback to user (as a text), then jump to user application. */
         (void)uart_transmit_ch(X_ACK);
+        HAL_IWDG_Refresh(&hiwdg);
+        HAL_Delay(1000);
         (void)uart_transmit_str((uint8_t*)"\n\rFirmware updated!\n\r");
         (void)uart_transmit_str((uint8_t*)"Jumping to user application...\n\r");
+        HAL_Delay(1000);
+        HAL_IWDG_Refresh(&hiwdg);
         flash_jump_to_app();
         break;
       /* Abort from host. */
@@ -103,6 +124,7 @@ void xmodem_receive(void)
         break;
     }
   }
+  return status;
 }
 
 /**

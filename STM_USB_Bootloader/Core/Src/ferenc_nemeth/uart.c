@@ -10,20 +10,16 @@
 #include "uart.h"
 #include "usbd_cdc_if.h"
 
-volatile uint32_t uart_len_target = 0, uart_len_current = 0;
-extern volatile uint8_t usb_state;    
-     
+
+/** Circular buffer   */
+volatile uint8_t uart_rx_buffer[2 * APP_RX_DATA_SIZE];
+volatile int rx_wp = 0, rx_rp = 0, rx_len = 0;
+ 
 /** Received data over USB are stored in this buffer      */
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 
 /** Data to send over USB CDC are stored in this buffer   */
 extern uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
-
-extern volatile uint8_t uart_rx_buffer[2 * APP_RX_DATA_SIZE];
-
-extern IWDG_HandleTypeDef hiwdg;
-
-
 
 /**
  * @brief   Receives data from UART.
@@ -33,21 +29,35 @@ extern IWDG_HandleTypeDef hiwdg;
  */
 uart_status uart_receive(uint8_t *data, uint16_t length)
 {
-  uart_status status = UART_ERROR;
+  uint32_t timer;
   
-  uart_len_current = 0;
-  uart_len_target = length;
-  for (int i = 0; i < UART_TIMEOUT; i++) 
+  timer = HAL_GetTick();
+  
+  while (HAL_GetTick() - timer < UART_TIMEOUT && length > 0) 
   {
-    HAL_Delay(1);
-    if (uart_len_current == uart_len_target) 
+    __NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
+    while (rx_len && length) 
     {
-      status = UART_OK;
-      memcpy((void*)data, (void*)uart_rx_buffer, length);
-      HAL_IWDG_Refresh(&hiwdg);
+      *data = uart_rx_buffer[rx_rp];
+      data++;
+      rx_rp++;
+      if (rx_rp == sizeof(uart_rx_buffer))
+      {
+        rx_rp = 0;
+      }
+      rx_len--;
+      length--; 
     }
+    __NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
   }
-  return status;
+  if (length) 
+  {
+      return UART_ERROR;
+  }
+  else
+  {
+      return UART_OK;
+  }
 }
 
 /**
@@ -84,26 +94,12 @@ uart_status uart_transmit_str(uint8_t *data)
  */
 uart_status uart_transmit_ch(uint8_t data)
 {
-  uart_status status = UART_ERROR;
-
-  /* Make available the UART module. */
   for (int i = 0; i < UART_TIMEOUT; i++) 
-  {
-    if (CDC_SET_CONTROL_LINE_STATE == usb_state) 
-    {
-      status = UART_OK;
-    }
-    HAL_Delay(1);
-  }
-  
-  for (int i = 0; i < UART_TIMEOUT && UART_OK == status; i++) 
   {
     if (USBD_OK == CDC_Transmit_FS(&data, 1))
     {
-      status = UART_OK;
-      break;
+      return UART_OK;
     }
   }
-  
-  return status;
+  return UART_ERROR;
 }
