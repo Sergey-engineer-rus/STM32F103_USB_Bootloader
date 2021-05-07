@@ -13,6 +13,8 @@
 /* Function pointer for jumping to user application. */
 typedef void (*fnc_ptr)(void);
 
+extern IWDG_HandleTypeDef hiwdg;
+
 /**
  * @brief   This function erases the memory.
  * @param   address: First address to be erased (the last is the end of the flash).
@@ -92,14 +94,22 @@ flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length)
  * @return  void
  */
 void flash_jump_to_app(void)
-{
-  /* Function pointer to the address of the user application. */
+{ 
+/* Function pointer to the address of the user application. */
+
   fnc_ptr jump_to_app;
   jump_to_app = (fnc_ptr)(*(volatile uint32_t*) (FLASH_APP_START_ADDRESS+4u));
+  
+  HAL_IWDG_Refresh(&hiwdg);
   USB_off();
+  HAL_RCC_DeInit();
+  HAL_Delay(1000);
   HAL_DeInit();
-  /* Change the main stack pointer. */
+
+/* Change the main stack pointer. */
+
   __set_MSP(*(volatile uint32_t*)FLASH_APP_START_ADDRESS);
   jump_to_app();
+
 }
 

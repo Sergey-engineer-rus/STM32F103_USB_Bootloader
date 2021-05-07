@@ -21,6 +21,8 @@ extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 /** Data to send over USB CDC are stored in this buffer   */
 extern uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
+extern USBD_HandleTypeDef hUsbDeviceFS;
+
 /**
  * @brief   Receives data from UART.
  * @param   *data: Array to save the received data.
@@ -112,7 +114,11 @@ uart_status uart_transmit_ch(uint8_t data)
 void USB_off(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  
+  if (hUsbDeviceFS.pClass) 
+  {
+    USBD_DeInit(&hUsbDeviceFS);
+    HAL_Delay(100);
+  }
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET);
   GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
