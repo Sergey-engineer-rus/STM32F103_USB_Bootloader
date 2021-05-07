@@ -50,7 +50,7 @@ ConnectionSharingDownstream\1\
 ConnectionSharingUpstream\1\
 ConnectionSharing\0\
 WindowClass\\
-SerialFlowControl\2\
+SerialFlowControl\1\
 SerialParity\0\
 SerialStopHalfbits\2\
 SerialDataBits\8\

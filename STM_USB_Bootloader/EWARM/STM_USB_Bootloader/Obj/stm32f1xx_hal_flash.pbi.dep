@@ -1,0 +1,37 @@
+stm32f1xx_hal_flash.pbi: \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash.c \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Core/Inc\stm32f1xx_hal_conf.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_rcc.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Device/ST/STM32F1xx/Include\stm32f1xx.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Include\core_cm3.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdint.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ycheck.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\yvals.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Defaults.h \
+  C:\\Program\ Files\ (x86)\\IAR\ Systems\\Embedded\ Workbench\ 8.3\\arm\\inc\\c\\DLib_Config_Full.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Product.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Include/cmsis_version.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Include/cmsis_compiler.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Include\cmsis_iccarm.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\iccarm_builtin.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stddef.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ysizet.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_gpio.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_exti.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_dma.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_cortex.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_flash.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_iwdg.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_pwr.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\stm32f1xx_hal_pcd.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
+  D:\STM32F103_USB_Bootloader\STM_USB_Bootloader\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h

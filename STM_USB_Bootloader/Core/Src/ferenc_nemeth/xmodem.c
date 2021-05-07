@@ -9,7 +9,7 @@
 
 #include "xmodem.h"
 
-#define FILE_START_TIMEOUT 100  // sec.
+#define FILE_START_TIMEOUT 60  // sec.
 
 extern IWDG_HandleTypeDef hiwdg;
      
@@ -71,9 +71,9 @@ xmodem_status xmodem_receive(void)
     }
 
     /* The header can be: SOH, STX, EOT and CAN. */
+    xmodem_status packet_status = X_ERROR;
     switch(header)
     {
-      xmodem_status packet_status = X_ERROR;
       /* 128 or 1024 bytes of data. */
       case X_SOH:
       case X_STX:

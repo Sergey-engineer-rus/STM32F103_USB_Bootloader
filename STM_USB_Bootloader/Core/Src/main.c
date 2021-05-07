@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define TERMINAL_CONNECT_TIMEOUT 100  // sec.
+#define TERMINAL_CONNECT_TIMEOUT 5  // sec.
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -77,13 +77,6 @@ static void USB_off(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
   HAL_Delay(1000);
 }
-
-static void USB_on(void)
-{
-   HAL_PCD_MspInit(&hpcd_USB_FS);
-   HAL_Delay(1000);
-}
-
 
 /* USER CODE END 0 */
 
@@ -159,10 +152,32 @@ int main(void)
     HAL_Delay(100);  
     
     if (USBD_STATE_CONFIGURED == hUsbDeviceFS.dev_state && CDC_GET_LINE_CODING == usb_state) 
-    {          
+    {
+     /*   
+      static uint8_t buf[200];
+      volatile int len = sizeof(buf) - 1;
+      volatile uint32_t addr = FLASH_APP_START_ADDRESS;
+      while (len == sizeof(buf) - 1) 
+      {
+          memcpy((void*)buf, (void*)addr, len);
+          addr += len;
+          for (int i = 0; i < len; i++)
+          {
+              if (0xFF == buf[i]) {
+                  len = i;
+                  break;           
+              }
+          }
+          buf[len] = '\0';
+          uart_transmit_str(buf);
+      }
+      HAL_Delay(1000);
+      HAL_NVIC_SystemReset();
+      */
       uart_transmit_str((uint8_t*)"\n\r================================\n\r");
       uart_transmit_str((uint8_t*)"UART Bootloader\n\r");
       uart_transmit_str((uint8_t*)"https://github.com/ferenc-nemeth\n\r");
+      uart_transmit_str((uint8_t*)"https://github.com/Sergey-engineer-rus/STM32F103_USB_Bootloader\n\r");
       uart_transmit_str((uint8_t*)"================================\n\r\n\r");
       usb_state = 0xFF;
       break;

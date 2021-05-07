@@ -19,8 +19,6 @@ typedef void (*fnc_ptr)(void);
  */
 flash_status flash_erase(uint32_t address)
 {
-  return FLASH_OK;
-  
   HAL_FLASH_Unlock();
 
   flash_status status = FLASH_ERROR;
@@ -53,10 +51,7 @@ flash_status flash_erase(uint32_t address)
 flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length)
 {
   flash_status status = FLASH_OK;
-  
-  HAL_Delay(1);
-  return FLASH_OK;
-  
+     
   HAL_FLASH_Unlock();
 
   /* Loop through the array. */
@@ -97,7 +92,6 @@ flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length)
  */
 void flash_jump_to_app(void)
 {
-  HAL_NVIC_SystemReset();
   /* Function pointer to the address of the user application. */
   fnc_ptr jump_to_app;
   jump_to_app = (fnc_ptr)(*(volatile uint32_t*) (FLASH_APP_START_ADDRESS+4u));
