@@ -8,7 +8,8 @@
  */
 
 #include "flash.h"
-
+#include "uart.h"
+     
 /* Function pointer for jumping to user application. */
 typedef void (*fnc_ptr)(void);
 
@@ -95,6 +96,7 @@ void flash_jump_to_app(void)
   /* Function pointer to the address of the user application. */
   fnc_ptr jump_to_app;
   jump_to_app = (fnc_ptr)(*(volatile uint32_t*) (FLASH_APP_START_ADDRESS+4u));
+  USB_off();
   HAL_DeInit();
   /* Change the main stack pointer. */
   __set_MSP(*(volatile uint32_t*)FLASH_APP_START_ADDRESS);
